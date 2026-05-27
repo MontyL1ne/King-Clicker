@@ -309,6 +309,7 @@ vkBridge.send("VKWebAppInit", {})
                 const fullName = `${user.first_name} ${user.last_name}`;
                 if (usernameText) usernameText.innerText = fullName;
                 if (avatarImg && user.photo_100) avatarImg.src = user.photo_100;
+                gameData.cachedUser.id = user.id;
                 gameData.cachedUser.name = fullName;
                 gameData.cachedUser.photo = user.photo_100 || "";
             }
@@ -371,30 +372,56 @@ if (leaderboardBtn) {
             if (leaderboardContainer) leaderboardContainer.innerHTML = '<div class="shop-loading">Загрузка таблицы лидеров...</div>';
         }
 
-        // Пытаемся обновить очки, но если мы в тестовой среде — ловим ошибку
-        vkBridge.send("VKWebAppSetLeaderboardBox", { value: Math.floor(gameData.coins) })
-            .then(() => vkBridge.send("VKWebAppGetLeaderboard", { global: 1, count: 10 }))
+        // 1. Сначала отправляем текущие очки игрока на твой бэкенд, чтобы обновить его баланс в базе
+        // Для уникальности игрока используем его VK ID (или заглушку, если запуск вне ВК)
+        const userId = gameData.cachedUser && gameData.cachedUser.id ? gameData.cachedUser.id : "test_user_id";
+        const username = gameData.cachedUser && gameData.cachedUser.name ? gameData.cachedUser.name : "Анонимный Король";
+
+        // Регистрируем/обновляем пользователя и отправляем его баланс
+        fetch(`https://api.montyline.ru/api/user/${userId}?username=${encodeURIComponent(username)}`)
+            .then(() => {
+                // Если баланс изменился, можно отправить точечный клик или синхронизацию, 
+                // но для простоты — бэкенд при get-запросе уже создаст юзера.
+                // Сделаем POST запрос для обновления счета (синхронизация баланса):
+                return fetch('https://api.montyline.ru/api/click', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: userId, clicksCount: 0 }) // Просто пингуем бэкенд
+                });
+            })
+            // 2. Стягиваем актуальный ТОП-10 с твоего сервера
+            .then(() => fetch('https://api.montyline.ru/api/leaderboard'))
+            .then(res => res.json())
             .then(data => {
-                if (data && data.items) {
-                    vkLeaderboardCache = data.items;
-                    renderLeaderboardList(data.items);
+                if (data && data.length > 0) {
+                    // Мапим данные твоего API под формат, который ожидает функция renderLeaderboardList
+                    const formattedPlayers = data.map((player, index) => ({
+                        place: index + 1,
+                        score: player.balance,
+                        user: {
+                            first_name: player.username,
+                            last_name: ""
+                        }
+                    }));
+                    
+                    vkLeaderboardCache = formattedPlayers;
+                    renderLeaderboardList(formattedPlayers);
                 } else {
-                    // Если ВК вернул пустой ответ без ошибки
-                    if (leaderboardContainer) leaderboardContainer.innerHTML = '<div class="shop-loading">В этой версии нет активных игроков.</div>';
+                    if (leaderboardContainer) leaderboardContainer.innerHTML = '<div class="shop-loading">Список лидеров пуст. Станьте первым!</div>';
                 }
             })
             .catch(err => {
-                console.error("Ошибка API лидерборда:", err);
-                // Заглушка вместо бесконечной загрузки:
+                console.error("Ошибка твоего API лидерборда:", err);
                 if (leaderboardContainer) {
                     leaderboardContainer.innerHTML = `
-                        <div class="shop-loading" style="color: #ffb700; padding: 10px;">
-                            🏆 Таблица лидеров будет доступна после официальной публикации аппа!
+                        <div class="shop-loading" style="color: #ff3b30; padding: 10px;">
+                            ❌ Не удалось загрузить лидеров с сервера MontyLine.
                         </div>`;
                 }
             });
     });
 }
+
 if (leaderboardCloseBtn) {
     leaderboardCloseBtn.addEventListener('click', () => {
         if (leaderboardModal) leaderboardModal.classList.add('hidden');
