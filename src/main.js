@@ -16,7 +16,6 @@ let gameData = {
 // Кэш данных из API ВКонтакте
 let vkFriendsList = [];
 let vkLeaderboardCache = null;
-let isVkFriendsLoaded = false;
 
 // ==========================================
 // 2. ЭЛЕМЕНТЫ ИНТЕРФЕЙСА (DOM)
@@ -91,18 +90,19 @@ function updateShopButtonsState() {
 function renderFriendsList() {
     if (!friendsContainer) return;
     
-    // Сразу очищаем контейнер от дефолтной надписи "Загрузка..."
     friendsContainer.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
-    // 1. Отрисовка реальных друзей (если ВК их отдал)
+    // 1. Отрисовка реальных друзей
     if (vkFriendsList && vkFriendsList.length > 0) {
         vkFriendsList.forEach(friend => {
             const isPlaying = friend.user_apps === true;
             const cost = isPlaying ? 22900 : 9000;
             const incomeText = isPlaying ? "12 500 корон/час" : "6 800 корон/час";
             const typeKey = isPlaying ? "active" : "newbie";
-            const isHired = gameData.hiredFriends[friend.id] !== undefined;
+            
+            // ИСПРАВЛЕНО: Строгое приведение ID к строке для сопоставления с JSON
+            const isHired = gameData.hiredFriends[friend.id.toString()] !== undefined;
 
             const island = document.createElement('div');
             island.className = 'friend-island';
@@ -127,7 +127,8 @@ function renderFriendsList() {
                 buyBtn.onclick = () => {
                     if (gameData.coins >= cost) {
                         gameData.coins -= cost;
-                        gameData.hiredFriends[friend.id] = typeKey;
+                        // ИСПРАВЛЕНО: Сохраняем ключ строго как строку
+                        gameData.hiredFriends[friend.id.toString()] = typeKey;
                         recalculateCPS();
                         updateUI();
                         renderFriendsList();
@@ -140,7 +141,6 @@ function renderFriendsList() {
             fragment.appendChild(island);
         });
     } else {
-        // Если друзей нет (тестовая группа или пустой профиль) — выводим красивый текст вместо вечной загрузки
         const noFriendsDiv = document.createElement('div');
         noFriendsDiv.className = 'shop-loading';
         noFriendsDiv.style.padding = '10px 0';
@@ -150,7 +150,7 @@ function renderFriendsList() {
         fragment.appendChild(noFriendsDiv);
     }
 
-    // 2. Блок найма рекрута (должен быть ВСЕГДА)
+    // 2. Блок найма рекрута
     const invitedCount = gameData.invitedCount || 0;
     const inviteCost = 5000 + (invitedCount * 2500);
 
@@ -170,10 +170,8 @@ function renderFriendsList() {
         </div>
     `;
     fragment.appendChild(inviteIsland);
-
     friendsContainer.appendChild(fragment);
 
-    // Привязка логики к кнопке рекрута
     const inviteBtn = document.getElementById('invite-friend-action-btn');
     if (inviteBtn) {
         if (gameData.coins >= inviteCost) {
@@ -203,7 +201,7 @@ function renderFriendsList() {
                         vkBridge.send("VKWebAppTapticNotificationOccurred", { type: "success" }).catch(() => {});
                     }
                 })
-                .catch(err => console.log("Окно закрыто в тест-режиме:", err));
+                .catch(err => console.log("Окно закрыто:", err));
         };
     }
 }
@@ -267,7 +265,6 @@ function saveGame() {
         key: "king_clicker_save",
         value: JSON.stringify(gameData)
     })
-    .then(() => console.log("Прогресс сохранен в VK Storage"))
     .catch(err => console.error("Ошибка автосохранения:", err));
 }
 
@@ -277,58 +274,71 @@ function saveGame() {
 vkBridge.send("VKWebAppInit", {})
     .then(() => vkBridge.send("VKWebAppStorageGet", { keys: ["king_clicker_save"] }))
     .then(saveResult => {
-        let hasSave = false;
-
         if (saveResult && saveResult.keys && saveResult.keys[0] && saveResult.keys[0].value) {
-            gameData = JSON.parse(saveResult.keys[0].value);
-            if (!gameData.hiredFriends) gameData.hiredFriends = {};
-            if (!gameData.invitedCount) gameData.invitedCount = 0;
-            if (!gameData.usedPromos) gameData.usedPromos = [];
-            recalculateCPS();
-            updateUI();
-            hasSave = true;
-        }
+            try {
+                const parsedData = JSON.parse(saveResult.keys[0].value);
+                
+                // Мягко переносим данные прогресса
+                gameData.coins = parsedData.coins || 0;
+                gameData.clickPower = parsedData.clickPower || 1;
+                gameData.upgradeCost = parsedData.upgradeCost || 10;
+                gameData.invitedCount = parsedData.invitedCount || 0;
+                gameData.usedPromos = parsedData.usedPromos || [];
+                
+                // ИСПРАВЛЕНО: Безопасное восстановление наемников без затирания
+                gameData.hiredFriends = parsedData.hiredFriends || {}; 
+                
+                if (parsedData.cachedUser) gameData.cachedUser = parsedData.cachedUser;
+                if (parsedData.cachedFriends) gameData.cachedFriends = parsedData.cachedFriends;
 
-        if (hasSave && gameData.cachedUser && gameData.isFirstLaunch === false) {
-            if (usernameText) usernameText.innerText = gameData.cachedUser.name;
-            if (avatarImg && gameData.cachedUser.photo) avatarImg.src = gameData.cachedUser.photo;
-            if (gameData.cachedFriends) {
-                vkFriendsList = gameData.cachedFriends;
-                isVkFriendsLoaded = true;
+                recalculateCPS();
+                updateUI();
+            } catch (e) {
+                console.error("Ошибка чтения сохранения из Storage:", e);
             }
-            return; 
         }
 
         return Promise.all([
             vkBridge.send("VKWebAppGetUserInfo").catch(() => null),
             vkBridge.send("VKWebAppGetFriends").catch(() => ({ users: [] }))
-        ]).then(([user, friendsResult]) => {
-            gameData.cachedUser = { name: "Король Кликов", photo: "" };
+        ]);
+    })
+    .then(([user, friendsResult]) => {
+        if (!gameData.cachedUser) {
+            gameData.cachedUser = { 
+                id: user ? user.id.toString() : `0`, 
+                name: "Король Кликов", 
+                photo: "" 
+            };
+        }
 
-            if (user) {
-                const fullName = `${user.first_name} ${user.last_name}`;
-                if (usernameText) usernameText.innerText = fullName;
-                if (avatarImg && user.photo_100) avatarImg.src = user.photo_100;
-                gameData.cachedUser.id = user.id;
-                gameData.cachedUser.name = fullName;
-                gameData.cachedUser.photo = user.photo_100 || "";
-            }
+        if (user) {
+            const fullName = `${user.first_name} ${user.last_name}`.trim();
+            if (usernameText) usernameText.innerText = fullName;
+            if (avatarImg && user.photo_100) avatarImg.src = user.photo_100;
+            
+            gameData.cachedUser.id = user.id.toString();
+            gameData.cachedUser.name = fullName;
+            gameData.cachedUser.photo = user.photo_100 || "";
+        } else {
+            if (usernameText && gameData.cachedUser.name) usernameText.innerText = gameData.cachedUser.name;
+            if (avatarImg && gameData.cachedUser.photo) avatarImg.src = gameData.cachedUser.photo;
+        }
 
-            if (friendsResult && friendsResult.users) {
-                vkFriendsList = friendsResult.users;
-                isVkFriendsLoaded = true;
-                gameData.cachedFriends = friendsResult.users; 
-            } else {
-                isVkFriendsLoaded = true;
-            }
+        if (friendsResult && friendsResult.users && friendsResult.users.length > 0) {
+            vkFriendsList = friendsResult.users;
+            gameData.cachedFriends = friendsResult.users; 
+        } else if (gameData.cachedFriends) {
+            vkFriendsList = gameData.cachedFriends;
+        }
 
-            gameData.isFirstLaunch = false;
-            saveGame();
-        });
+        gameData.isFirstLaunch = false;
+        // ИСПРАВЛЕНО: Убран моментальный saveGame() при входе, ломавший массив наемников
+        updateUI();
     })
     .catch(err => {
-        console.error("Ошибка инициализации:", err);
-        if (usernameText) usernameText.innerText = "Король Кликов";
+        console.error("Критическая ошибка при инициализации игры:", err);
+        if (usernameText) usernameText.innerText = gameData.cachedUser?.name || "Король Кликов";
     });
 
 // Таймеры игрового цикла
@@ -372,38 +382,45 @@ if (leaderboardBtn) {
             if (leaderboardContainer) leaderboardContainer.innerHTML = '<div class="shop-loading">Загрузка таблицы лидеров...</div>';
         }
 
-        // 1. Сначала отправляем текущие очки игрока на твой бэкенд, чтобы обновить его баланс в базе
-        // Для уникальности игрока используем его VK ID (или заглушку, если запуск вне ВК)
-        const userId = gameData.cachedUser && gameData.cachedUser.id ? gameData.cachedUser.id : "test_user_id";
-        const username = gameData.cachedUser && gameData.cachedUser.name ? gameData.cachedUser.name : "Анонимный Король";
+        // ИСПРАВЛЕНО: Безопасная очистка ID от любых букв (оставляем только цифры для БД)
+        let rawId = gameData.cachedUser?.id ? gameData.cachedUser.id.toString() : "0";
+        let userId = rawId.replace(/\D/g, ""); 
+        if (userId === "") userId = "0";
 
-        // Регистрируем/обновляем пользователя и отправляем его баланс
+        let username = gameData.cachedUser?.name ? gameData.cachedUser.name : "Анонимный Король";
+        const currentBalance = Math.floor(gameData.coins || 0);
+
+        // 1. Регистрируем пользователя
         fetch(`https://api.montyline.ru/api/user/${userId}?username=${encodeURIComponent(username)}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Ошибка регистрации');
+                return res.json();
+            })
+            // 2. Отправляем реальный баланс монет
             .then(() => {
-                // Если баланс изменился, можно отправить точечный клик или синхронизацию, 
-                // но для простоты — бэкенд при get-запросе уже создаст юзера.
-                // Сделаем POST запрос для обновления счета (синхронизация баланса):
                 return fetch('https://api.montyline.ru/api/click', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: userId, clicksCount: 0 }) // Просто пингуем бэкенд
+                    body: JSON.stringify({ id: userId, clicksCount: currentBalance }) 
                 });
             })
-            // 2. Стягиваем актуальный ТОП-10 с твоего сервера
+            .then(res => {
+                if (!res.ok) throw new Error('Ошибка синхронизации');
+                return res.json();
+            })
+            // 3. Получаем ТОП-10
             .then(() => fetch('https://api.montyline.ru/api/leaderboard'))
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('Ошибка получения списка лидеров');
+                return res.json();
+            })
             .then(data => {
-                if (data && data.length > 0) {
-                    // Мапим данные твоего API под формат, который ожидает функция renderLeaderboardList
+                if (data && Array.isArray(data) && data.length > 0) {
                     const formattedPlayers = data.map((player, index) => ({
                         place: index + 1,
-                        score: player.balance,
-                        user: {
-                            first_name: player.username,
-                            last_name: ""
-                        }
+                        score: player.balance !== undefined ? player.balance : (player.score || 0),
+                        user: { first_name: player.username || "Игрок", last_name: "" }
                     }));
-                    
                     vkLeaderboardCache = formattedPlayers;
                     renderLeaderboardList(formattedPlayers);
                 } else {
@@ -411,12 +428,9 @@ if (leaderboardBtn) {
                 }
             })
             .catch(err => {
-                console.error("Ошибка твоего API лидерборда:", err);
+                console.error("Ошибка API лидерборда:", err);
                 if (leaderboardContainer) {
-                    leaderboardContainer.innerHTML = `
-                        <div class="shop-loading" style="color: #ff3b30; padding: 10px;">
-                            ❌ Не удалось загрузить лидеров с сервера MontyLine.
-                        </div>`;
+                    leaderboardContainer.innerHTML = `<div class="shop-loading" style="color: #ff3b30; padding: 10px;">❌ Ошибка сервера. Попробуйте позже.</div>`;
                 }
             });
     });
@@ -506,7 +520,7 @@ function showRewardModal(title, text) {
     overlay.querySelector('#close-reward-btn').onclick = () => overlay.remove();
 }
 
-// Физика клика и удержания
+// Физика клика
 let isHolding = false;
 let isRotatingMode = false; 
 let currentSpeed = 0;      
@@ -591,7 +605,7 @@ if (clickObject) {
     window.addEventListener('pointercancel', stopHolding);
 }
 
-// Дополнительные кнопки ВК
+// Кнопки ВК
 const adBtn = document.getElementById('ad-btn');
 if (adBtn) {
     adBtn.addEventListener('click', () => {
