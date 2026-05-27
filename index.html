@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>ВК Король Кликер</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game-background"></div>
+
+    <div class="game-container">
+      <div class="header">
+        <img
+          id="avatar"
+          src="https://vk.com/images/camera_100.png"
+          alt="Аватар"
+        />
+        <span id="username">Загрузка...</span>
+      </div>
+
+      <div class="score-container">
+        <h1 id="coins">0</h1>
+        <p>корон</p>
+      </div>
+
+      <div class="click-area">
+        <img
+          id="click-object"
+          src="click-king.png"
+          alt="Кликни Меня!"
+          class="click-target"
+          draggable="false"
+        />
+      </div>
+
+      <div class="shop">
+        <button id="upgrade-btn" class="game-btn wide-btn btn-gold">
+          <span class="btn-text"
+            >👑 Прокачать клик (+1) | Цена:
+            <span id="upgrade-cost">10</span></span
+          >
+        </button>
+
+        <div class="social-row">
+          <button
+            id="ad-btn"
+            class="game-btn round-btn btn-green"
+            title="Смотреть рекламу"
+          >
+            <span class="btn-icon">🎁</span>
+          </button>
+
+          <button
+            id="leaderboard-btn"
+            class="game-btn round-btn btn-blue"
+            title="Таблица лидеров"
+          >
+            <span class="btn-icon">🏆</span>
+          </button>
+
+          <button
+            id="share-btn"
+            class="game-btn round-btn btn-blue"
+            title="Поделиться"
+          >
+            <span class="btn-icon">📢</span>
+          </button>
+        </div>
+      </div>
+
+      <button id="shop-open-btn" class="game-btn wide-btn">
+        🛒 Магазин наемников
+      </button>
+
+      <div id="shop-modal" class="shop-modal hidden">
+        <div class="shop-header-bar">
+          <h2>Магазин наемников</h2>
+          <button id="shop-close-btn" class="shop-close-btn">✕</button>
+        </div>
+
+        <div class="promo-island">
+          <input
+            type="text"
+            id="promo-input"
+            placeholder="Введите промокод..."
+            autocomplete="off"
+          />
+          <button id="promo-check-btn">Проверить</button>
+        </div>
+
+        <div id="friends-list-container"></div>
+
+        <div id="friends-list-container" class="friends-list-container">
+          <div class="shop-loading">Загрузка списка друзей...</div>
+        </div>
+      </div>
+
+      <div id="leaderboard-modal" class="leaderboard-modal hidden">
+        <div class="leaderboard-header-bar">
+          <h2>Таблица лидеров</h2>
+          <button id="leaderboard-close-btn" class="leaderboard-close-btn">
+            ✕
+          </button>
+        </div>
+
+        <div id="leaderboard-list-container" class="leaderboard-list-container">
+          <div class="leaderboard-loading">Загрузка таблицы лидеров...</div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

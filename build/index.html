@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>ВК Король Кликер</title>
+    <script type="module" crossorigin src="./assets/index-2rzvSH1C.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CcGQVNlg.css">
+    <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script>
+    <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
+  </head>
+  <body>
+    <div class="game-background"></div>
+
+    <div class="game-container">
+      <div class="header">
+        <img
+          id="avatar"
+          src="https://vk.com/images/camera_100.png"
+          alt="Аватар"
+        />
+        <span id="username">Загрузка...</span>
+      </div>
+
+      <div class="score-container">
+        <h1 id="coins">0</h1>
+        <p>корон</p>
+      </div>
+
+      <div class="click-area">
+        <img
+          id="click-object"
+          src="./assets/click-king-DE2Djodb.png"
+          alt="Кликни Меня!"
+          class="click-target"
+          draggable="false"
+        />
+      </div>
+
+      <div class="shop">
+        <button id="upgrade-btn" class="game-btn wide-btn btn-gold">
+          <span class="btn-text"
+            >👑 Прокачать клик (+1) | Цена:
+            <span id="upgrade-cost">10</span></span
+          >
+        </button>
+
+        <div class="social-row">
+          <button
+            id="ad-btn"
+            class="game-btn round-btn btn-green"
+            title="Смотреть рекламу"
+          >
+            <span class="btn-icon">🎁</span>
+          </button>
+
+          <button
+            id="leaderboard-btn"
+            class="game-btn round-btn btn-blue"
+            title="Таблица лидеров"
+          >
+            <span class="btn-icon">🏆</span>
+          </button>
+
+          <button
+            id="share-btn"
+            class="game-btn round-btn btn-blue"
+            title="Поделиться"
+          >
+            <span class="btn-icon">📢</span>
+          </button>
+        </div>
+      </div>
+
+      <button id="shop-open-btn" class="game-btn wide-btn">
+        🛒 Магазин наемников
+      </button>
+
+      <div id="shop-modal" class="shop-modal hidden">
+        <div class="shop-header-bar">
+          <h2>Магазин наемников</h2>
+          <button id="shop-close-btn" class="shop-close-btn">✕</button>
+        </div>
+
+        <div class="promo-island">
+          <input
+            type="text"
+            id="promo-input"
+            placeholder="Введите промокод..."
+            autocomplete="off"
+          />
+          <button id="promo-check-btn">Проверить</button>
+        </div>
+
+        <div id="friends-list-container"></div>
+
+        <div id="friends-list-container" class="friends-list-container">
+          <div class="shop-loading">Загрузка списка друзей...</div>
+        </div>
+      </div>
+
+      <div id="leaderboard-modal" class="leaderboard-modal hidden">
+        <div class="leaderboard-header-bar">
+          <h2>Таблица лидеров</h2>
+          <button id="leaderboard-close-btn" class="leaderboard-close-btn">
+            ✕
+          </button>
+        </div>
+
+        <div id="leaderboard-list-container" class="leaderboard-list-container">
+          <div class="leaderboard-loading">Загрузка таблицы лидеров...</div>
+        </div>
+      </div>
+    </div>
+
+    <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
+    <script nomodule crossorigin id="vite-legacy-polyfill" src="./assets/polyfills-legacy-BVzE7q1W.js"></script>
+    <script nomodule crossorigin id="vite-legacy-entry" data-src="./assets/index-legacy-Dy9XWw2s.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
+  </body>
+</html>

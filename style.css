@@ -1,0 +1,562 @@
+/* --- 💎 ГЛОБАЛЬНЫЕ НАСТРОЙКИ СТИЛЯ GLASSMORPHISM --- */
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.06);     
+    --glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --glass-border: rgba(255, 255, 255, 0.12); 
+    --text-primary: #ffffff;
+    --accent-gold: #ffd700;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Inter', sans-serif;
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0d0d13; 
+    background: url('background.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+/* 🖼️ ЗАДНИЙ ФОН ИГРЫ */
+.game-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Главный игровой контейнер (Размытое стекло поверх фона) */
+.game-container {
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 450px; 
+    height: 96%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    background: rgba(0, 0, 0, 0.25); /* Затемнение для читаемости */
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    isolation: isolate;
+}
+/* --- 👤 ПРОФИЛЬ И СЧЕТЧИК --- */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 10px 18px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.score-container {
+    text-align: center;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px 35px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#coins {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent-gold); 
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.35);
+}
+
+/* --- 👑 ЗОНА КЛИКА --- */
+.click-area {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.click-target {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    
+    width: 80%;
+    max-width: 280px;
+    height: auto;
+    cursor: pointer;
+    
+    mix-blend-mode: multiply; 
+    filter: drop-shadow(0px 15px 25px rgba(0,0,0,0.6));
+    
+    transition: transform 0.05s ease;
+    will-change: transform;
+}
+
+.click-target.clicking {
+    transform: scale(0.92) rotate(-2deg) !important;
+}
+
+.click-target:active {
+    transform: scale(0.92) rotate(-2deg);
+}
+
+.floating-text {
+    position: absolute;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent-gold);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 10;
+    animation: floatUp 0.6s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-120px) scale(1.2); opacity: 0; }
+}
+
+/* --- 🔘 БАЗОВЫЙ СТИЛЬ ДЛЯ ВСЕХ ИГРОВЫХ КНОПОК --- */
+.game-btn, #shop-open-btn, #leaderboard-open-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: inherit;
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+                
+    transition:
+        transform 0.22s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.game-btn::before, #shop-open-btn::before, #leaderboard-open-btn::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    z-index: -1;
+    filter: blur(10px);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.game-btn .btn-icon, .game-btn .btn-text,
+#shop-open-btn .btn-icon, #shop-open-btn .btn-text,
+#leaderboard-open-btn .btn-icon, #leaderboard-open-btn .btn-text {
+    display: inline-block;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.game-btn .btn-icon, #shop-open-btn .btn-icon, #leaderboard-open-btn .btn-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.round-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+}
+
+.wide-btn, #shop-open-btn, #leaderboard-open-btn {
+    width: 100%;
+    height: 54px;
+    border-radius: 27px; 
+    font-size: 0.95rem;
+    font-weight: bold;
+    padding: 0 24px;
+    letter-spacing: 0.5px;
+}
+
+.game-btn:hover, #shop-open-btn:hover, #leaderboard-open-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+}
+
+.game-btn:active, #shop-open-btn:active, #leaderboard-open-btn:active {
+    transform: scale(0.95);
+}
+
+.game-btn.active .btn-icon, .game-btn.active .btn-text {
+    transform: scale(1.08);
+}
+
+/* --- 🌈 УНИКАЛЬНЫЕ СВЕЧЕНИЯ И ЦВЕТА КНОПОК --- */
+
+/* 1. Золотая кнопка (Прокачка клика) */
+.btn-gold {
+    background: rgba(255, 183, 3, 0.12);
+    border: 1px solid rgba(255, 183, 3, 0.45);
+    box-shadow: 0 0 12px rgba(255, 183, 3, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.08);
+}
+.btn-gold::before {
+    background: radial-gradient(circle, rgba(255, 183, 3, 0.35), transparent 70%);
+}
+.btn-gold:hover {
+    background: rgba(255, 183, 3, 0.22);
+    box-shadow: 0 0 18px rgba(255, 183, 3, 0.45), inset 0 0 14px rgba(255, 255, 255, 0.1);
+}
+.btn-gold.active {
+    background: rgba(255, 183, 3, 0.3);
+    border-color: rgba(255, 215, 0, 0.7);
+    box-shadow: 0 0 24px rgba(255, 183, 3, 0.55), inset 0 0 16px rgba(255, 255, 255, 0.12);
+}
+
+/* 🛒 Фиолетовая кнопка (Магазин наемников) */
+#shop-open-btn {
+    border: 1px solid rgba(157, 78, 221, 0.45);
+    background: rgba(157, 78, 221, 0.12);
+    margin-bottom: 5px; 
+}
+#shop-open-btn::before {
+    background: radial-gradient(circle, rgba(157, 78, 221, 0.4), transparent 70%);
+}
+#shop-open-btn:hover {
+    background: rgba(157, 78, 221, 0.22);
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.5), inset 0 0 14px rgba(255, 255, 255, 0.1);
+    border-color: rgba(157, 78, 221, 0.65);
+}
+
+/* 2. Зеленая кнопка (Реклама) */
+.btn-green {
+    background: rgba(78, 217, 79, 0.12);
+    border: 1px solid rgba(78, 217, 79, 0.45);
+    box-shadow: 0 0 12px rgba(78, 217, 79, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.08);
+}
+.btn-green::before {
+    background: radial-gradient(circle, rgba(78, 217, 79, 0.35), transparent 70%);
+}
+.btn-green:hover {
+    background: rgba(78, 217, 79, 0.22);
+    box-shadow: 0 0 18px rgba(78, 217, 79, 0.45), inset 0 0 14px rgba(255, 255, 255, 0.1);
+}
+
+/* 3. Синяя кнопка (Поделиться в ВК) */
+.btn-blue {
+    background: rgba(70, 130, 255, 0.12);
+    border: 1px solid rgba(120, 170, 255, 0.45);
+    box-shadow: 0 0 12px rgba(60, 120, 255, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.08);
+}
+.btn-blue::before {
+    background: radial-gradient(circle, rgba(90, 150, 255, 0.35), transparent 70%);
+}
+.btn-blue:hover {
+    background: rgba(70, 130, 255, 0.22);
+}
+
+.shop {
+    width: 100%;
+    max-width: 320px; 
+    display: flex;
+    flex-direction: column;
+    gap: 16px;       
+    margin-bottom: 15px;
+}
+
+.social-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;       
+    width: 100%;
+}
+
+/* Полное дублирование структуры магазина для лидерборда */
+.shop-modal, .leaderboard-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(26, 26, 36, 0.85); 
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    color: #ffffff;
+    z-index: 10000;
+    box-sizing: border-box;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 25px;
+}
+
+.shop-modal.hidden, .leaderboard-modal.hidden {
+    display: none !important;
+}
+
+.shop-header-bar, .leaderboard-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(45, 45, 61, 0.5);
+    padding-bottom: 10px;
+}
+
+.shop-header-bar h2, .leaderboard-header-bar h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+    color: #ffd700;
+}
+
+.shop-close-btn, .leaderboard-close-btn {
+    background: none;
+    border: none;
+    color: #aaaaaa;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+.shop-close-btn:hover, .leaderboard-close-btn:hover {
+    color: #ff4d4d;
+    transform: scale(1.1);
+}
+
+.friends-list-container, .leaderboard-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Островки для Магазина и Лидерборда */
+.friend-island, .leaderboard-player-island {
+    background: rgba(37, 37, 56, 0.6); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.friend-island:hover, .leaderboard-player-island:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.friend-info, .player-info {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Порядковый номер топа */
+.player-rank {
+    font-size: 18px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.4);
+    min-width: 28px;
+}
+/* Подсветка Топ-3 */
+.leaderboard-player-island:nth-child(1) .player-rank { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.6); }
+.leaderboard-player-island:nth-child(2) .player-rank { color: #c0c0c0; text-shadow: 0 0 8px rgba(192,192,192,0.6); }
+.leaderboard-player-island:nth-child(3) .player-rank { color: #cd7f32; text-shadow: 0 0 8px rgba(205,127,50,0.6); }
+
+.friend-actions, .player-score-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.friend-cost, .player-score-value {
+    font-size: 14px;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Кнопки наемников */
+.buy-worker-btn {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+.buy-worker-btn:active { transform: scale(0.95); }
+
+.buy-worker-btn.available { background-color: #27ae60; }
+.buy-worker-btn.available:hover { background-color: #2ecc71; }
+
+.buy-worker-btn.locked {
+    background-color: #c0392b;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.worker-owned {
+    color: #2ecc71;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.shop-loading, .leaderboard-loading {
+    text-align: center;
+    color: #888888;
+    margin-top: 50px;
+}
+
+/* Островок промокодов */
+.promo-island {
+    background: #252538;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    gap: 10px;
+}
+
+/* Прозрачное поле ввода */
+#promo-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent; /* Линия не видна по умолчанию */
+    color: #ffffff;
+    font-size: 16px;
+    padding: 8px 5px;
+    outline: none;
+    transition: border-bottom-color 0.3s ease;
+}
+
+/* Белая полоска при клике/выборе инпута */
+#promo-input:focus {
+    border-bottom-color: #ffffff;
+}
+
+/* Плейсхолдер */
+#promo-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Кнопка проверки кода */
+#promo-check-btn {
+    background: #4d4d66;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+}
+
+/* Состояния кнопки (Правильно / Неправильно) */
+#promo-check-btn.btn-error {
+    background: #ff4d4d !important;
+    animation: shake-anim 0.2s ease-in-out 0s 5; /* Пошатывание 2 секунды (5 циклов по 0.2с быстрых движений) */
+}
+
+#promo-check-btn.btn-success {
+    background: #4ecc64 !important;
+}
+
+/* Анимация пошатывания вправо-влево */
+@keyframes shake-anim {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+    100% { transform: translateX(0); }
+}
+
+/* Текст награды по центру экрана поверх всего */
+.promo-reward-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(26, 26, 36, 0.95);
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+    border-radius: 16px;
+    padding: 25px 40px;
+    text-align: center;
+    z-index: 20000; /* Выше всех модалок */
+    animation: scale-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.promo-reward-overlay h2 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.promo-reward-overlay p {
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.promo-reward-overlay button {
+    background: #ffd700;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+@keyframes scale-up {
+    from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
